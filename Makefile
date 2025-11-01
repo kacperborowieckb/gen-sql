@@ -6,6 +6,7 @@ deps:
 	go get github.com/go-chi/chi/v5@v5.0.11
 	go get github.com/rabbitmq/amqp091-go@v1.10.0
 	go get github.com/go-playground/validator/v10@v10.20.0
+	go get github.com/lib/pq@v1.10.9 
 	go mod tidy
 
 build:

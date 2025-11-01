@@ -22,6 +22,8 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	r.Use(middleware.Timeout(60 * time.Second))
+
 	r.Get("/health", health.Handler)
 
 	srv := &http.Server{Addr: ":" + port, Handler: r}
