@@ -1,0 +1,14 @@
+
+syntax = "proto3";
+
+option go_package = "github.com/kacperborowieckb/gen-sql/shared/gen";
+
+service TestService {
+  rpc Ping(PingRequest) returns (PingResponse);
+}
+
+message PingRequest {
+}
+
+message PingResponse {
+}
