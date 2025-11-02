@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /src
 
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 # ------
 
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/base:nonroot
 
 USER 65532:65532
 

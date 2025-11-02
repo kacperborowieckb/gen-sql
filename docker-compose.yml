@@ -32,6 +32,10 @@ services:
       dockerfile: services/api/Dockerfile
     environment:
       PORT: ${API_PORT}
+      # Address for the gRPC server (data service)
+      DATA_SERVICE_ADDR: "data:8081" 
+      # Use "true" for local
+      DATA_SERVICE_INSECURE: "true"
     ports:
       - "${API_PORT}:${API_PORT}"
     depends_on:
