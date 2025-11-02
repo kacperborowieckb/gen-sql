@@ -9,6 +9,7 @@ deps:
 	go get github.com/lib/pq@v1.10.9
 	go get google.golang.org/grpc@latest
 	go get google.golang.org/protobuf@latest
+	go get github.com/google/uuid@v1.6.0
 	go mod tidy
 
 .PHONY: proto-tools

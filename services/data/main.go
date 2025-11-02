@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"net"
@@ -13,29 +12,14 @@ import (
 	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 // dataServer implements the gRPC TestServiceServer interface.
 // It holds dependencies like the database pool.
 type dataServer struct {
-	pb.UnimplementedTestServiceServer
+	pb.UnimplementedDataServiceServer
 	dbPool *sql.DB
-}
-
-func (s *dataServer) Ping(ctx context.Context, in *pb.PingRequest) (*pb.PingResponse, error) {
-	log.Println("Received Ping request")
-
-	if err := s.dbPool.PingContext(ctx); err != nil {
-		log.Printf("Failed to ping database: %v", err)
-		return nil, status.Errorf(codes.Internal, "database ping failed: %v", err)
-	}
-
-	log.Println("Database ping successful")
-
-	return &pb.PingResponse{}, nil
 }
 
 func NewDataServer(dbPool *sql.DB) *dataServer {
@@ -68,7 +52,7 @@ func main() {
 
 	s := NewDataServer(dbPool)
 
-	pb.RegisterTestServiceServer(grpcServer, s)
+	pb.RegisterDataServiceServer(grpcServer, s)
 
 	reflection.Register(grpcServer)
 

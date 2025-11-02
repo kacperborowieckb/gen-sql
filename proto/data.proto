@@ -1,14 +1,23 @@
-
 syntax = "proto3";
+
+package gen;
 
 option go_package = "github.com/kacperborowieckb/gen-sql/shared/gen";
 
-service TestService {
-  rpc Ping(PingRequest) returns (PingResponse);
+service DataService {
+  rpc StartDataGeneration(StartDataGenerationRequest) returns (StartDataGenerationResponse);
 }
 
-message PingRequest {
+message StartDataGenerationRequest {
+  string project_id = 1;
+  string ddl_schema = 2;
+  int32 max_rows = 3;
+  string generation_instructions = 4;
 }
 
-message PingResponse {
+message StartDataGenerationResponse {
+  string generation_job_id = 1;
+  string message = 2;
+  bool success = 3;
 }
+

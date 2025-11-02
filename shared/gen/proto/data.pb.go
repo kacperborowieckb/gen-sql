@@ -21,26 +21,30 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type PingRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type StartDataGenerationRequest struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId              string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	DdlSchema              string                 `protobuf:"bytes,2,opt,name=ddl_schema,json=ddlSchema,proto3" json:"ddl_schema,omitempty"`
+	MaxRows                int32                  `protobuf:"varint,3,opt,name=max_rows,json=maxRows,proto3" json:"max_rows,omitempty"`
+	GenerationInstructions string                 `protobuf:"bytes,4,opt,name=generation_instructions,json=generationInstructions,proto3" json:"generation_instructions,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
-func (x *PingRequest) Reset() {
-	*x = PingRequest{}
+func (x *StartDataGenerationRequest) Reset() {
+	*x = StartDataGenerationRequest{}
 	mi := &file_proto_data_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PingRequest) String() string {
+func (x *StartDataGenerationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PingRequest) ProtoMessage() {}
+func (*StartDataGenerationRequest) ProtoMessage() {}
 
-func (x *PingRequest) ProtoReflect() protoreflect.Message {
+func (x *StartDataGenerationRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_data_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -52,31 +56,62 @@ func (x *PingRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PingRequest.ProtoReflect.Descriptor instead.
-func (*PingRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartDataGenerationRequest.ProtoReflect.Descriptor instead.
+func (*StartDataGenerationRequest) Descriptor() ([]byte, []int) {
 	return file_proto_data_proto_rawDescGZIP(), []int{0}
 }
 
-type PingResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+func (x *StartDataGenerationRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
 }
 
-func (x *PingResponse) Reset() {
-	*x = PingResponse{}
+func (x *StartDataGenerationRequest) GetDdlSchema() string {
+	if x != nil {
+		return x.DdlSchema
+	}
+	return ""
+}
+
+func (x *StartDataGenerationRequest) GetMaxRows() int32 {
+	if x != nil {
+		return x.MaxRows
+	}
+	return 0
+}
+
+func (x *StartDataGenerationRequest) GetGenerationInstructions() string {
+	if x != nil {
+		return x.GenerationInstructions
+	}
+	return ""
+}
+
+type StartDataGenerationResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GenerationJobId string                 `protobuf:"bytes,1,opt,name=generation_job_id,json=generationJobId,proto3" json:"generation_job_id,omitempty"`
+	Message         string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Success         bool                   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *StartDataGenerationResponse) Reset() {
+	*x = StartDataGenerationResponse{}
 	mi := &file_proto_data_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PingResponse) String() string {
+func (x *StartDataGenerationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PingResponse) ProtoMessage() {}
+func (*StartDataGenerationResponse) ProtoMessage() {}
 
-func (x *PingResponse) ProtoReflect() protoreflect.Message {
+func (x *StartDataGenerationResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_data_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -88,20 +123,50 @@ func (x *PingResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PingResponse.ProtoReflect.Descriptor instead.
-func (*PingResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartDataGenerationResponse.ProtoReflect.Descriptor instead.
+func (*StartDataGenerationResponse) Descriptor() ([]byte, []int) {
 	return file_proto_data_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *StartDataGenerationResponse) GetGenerationJobId() string {
+	if x != nil {
+		return x.GenerationJobId
+	}
+	return ""
+}
+
+func (x *StartDataGenerationResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *StartDataGenerationResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
 }
 
 var File_proto_data_proto protoreflect.FileDescriptor
 
 const file_proto_data_proto_rawDesc = "" +
 	"\n" +
-	"\x10proto/data.proto\"\r\n" +
-	"\vPingRequest\"\x0e\n" +
-	"\fPingResponse22\n" +
-	"\vTestService\x12#\n" +
-	"\x04Ping\x12\f.PingRequest\x1a\r.PingResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
+	"\x10proto/data.proto\x12\x03gen\"\xae\x01\n" +
+	"\x1aStartDataGenerationRequest\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x1d\n" +
+	"\n" +
+	"ddl_schema\x18\x02 \x01(\tR\tddlSchema\x12\x19\n" +
+	"\bmax_rows\x18\x03 \x01(\x05R\amaxRows\x127\n" +
+	"\x17generation_instructions\x18\x04 \x01(\tR\x16generationInstructions\"}\n" +
+	"\x1bStartDataGenerationResponse\x12*\n" +
+	"\x11generation_job_id\x18\x01 \x01(\tR\x0fgenerationJobId\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +
+	"\asuccess\x18\x03 \x01(\bR\asuccess2g\n" +
+	"\vDataService\x12X\n" +
+	"\x13StartDataGeneration\x12\x1f.gen.StartDataGenerationRequest\x1a .gen.StartDataGenerationResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
 
 var (
 	file_proto_data_proto_rawDescOnce sync.Once
@@ -117,12 +182,12 @@ func file_proto_data_proto_rawDescGZIP() []byte {
 
 var file_proto_data_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_data_proto_goTypes = []any{
-	(*PingRequest)(nil),  // 0: PingRequest
-	(*PingResponse)(nil), // 1: PingResponse
+	(*StartDataGenerationRequest)(nil),  // 0: gen.StartDataGenerationRequest
+	(*StartDataGenerationResponse)(nil), // 1: gen.StartDataGenerationResponse
 }
 var file_proto_data_proto_depIdxs = []int32{
-	0, // 0: TestService.Ping:input_type -> PingRequest
-	1, // 1: TestService.Ping:output_type -> PingResponse
+	0, // 0: gen.DataService.StartDataGeneration:input_type -> gen.StartDataGenerationRequest
+	1, // 1: gen.DataService.StartDataGeneration:output_type -> gen.StartDataGenerationResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
