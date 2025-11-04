@@ -1,35 +1,72 @@
 package main
 
 import (
+	"database/sql"
 	"log"
-	"net/http"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/kacperborowieckb/gen-sql/shared/messaging"
+	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
-	"github.com/kacperborowieckb/gen-sql/utils/health"
-	"github.com/kacperborowieckb/gen-sql/utils/shutdown"
-
-	"github.com/go-chi/chi/v5"
 )
 
+type generatorServer struct {
+	dbPool   *sql.DB
+	mqClient *messaging.RabbitMQ
+}
+
+func NewGeneratorServer(dbPool *sql.DB, mqClient *messaging.RabbitMQ) *generatorServer {
+	return &generatorServer{
+		dbPool:   dbPool,
+		mqClient: mqClient,
+	}
+}
+
 func main() {
-	port := env.GetString("PORT", "8082")
-	// TODO: implement AMQP
-	// amqpURL := env.GetString("AMQP_URL", "")
-	// queueName := env.GetString("GENERATOR_QUEUE", "gensql.jobs")
+	log.Println("Starting generator service...")
 
-	r := chi.NewRouter()
+	// --- Database Setup ---
+	dbConfig, err := db.DBConfig()
+	if err != nil {
+		log.Fatalf("Failed to load database config: %v", err)
+	}
 
-	r.Get("/health", health.Handler)
+	dbPool, err := db.NewConnection(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer dbPool.Close()
 
-	srv := &http.Server{Addr: ":" + port, Handler: r}
+	// --- RabbitMQ Client Setup ---
+	rabbitMQURI := env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
 
-	go func() {
-		log.Printf("generator service listening on %s", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %v", err)
-		}
-	}()
+	mqClient, err := messaging.NewRabbitMQ(rabbitMQURI)
+	if err != nil {
+		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+	}
+	defer mqClient.Close()
 
-	shutdown.WaitForShutdown(srv, 5*time.Second)
+	if err := mqClient.SetupAppTopology(); err != nil {
+		log.Fatalf("Failed to setup RabbitMQ topology: %v", err)
+	}
+
+	// --- Create Server Instance ---
+	s := NewGeneratorServer(dbPool, mqClient)
+
+	// --- Start Consuming Messages ---
+	log.Println("Starting consumer for queue:", messaging.DataGenerationQueue)
+	// refactor to have some consumer struct and handle based on routing key
+	if err := mqClient.ConsumeMessages(messaging.DataGenerationQueue, s.handleProjectCreated); err != nil {
+		log.Fatalf("Failed to start consumer: %v", err)
+	}
+
+	// --- Graceful Shutdown ---
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
+
+	log.Println("Shutting down generator service...")
+	log.Println("Generator service stopped.")
 }
