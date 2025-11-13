@@ -19,7 +19,6 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 		return nil, status.Error(codes.InvalidArgument, "projectId and ddlSchema are required")
 	}
 
-	// Create ProjectCreatedEvent
 	event := messaging.ProjectCreatedEvent{
 		ProjectID:              in.ProjectId,
 		DdlSchema:              in.DdlSchema,
@@ -27,20 +26,17 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 		MaxRows:                in.MaxRows,
 	}
 
-	// Marshal event to JSON
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		log.Printf("Failed to marshal ProjectCreatedEvent: %v", err)
 		return nil, status.Error(codes.Internal, "failed to marshal event data")
 	}
 
-	// Wrap in AmqpMessage
 	amqpMsg := contracts.AmqpMessage{
 		OwnerId: in.ProjectId,
 		Data:    eventData,
 	}
 
-	// Publish message to RabbitMQ
 	if err := s.mqClient.PublishMessage(ctx, messaging.ProjectsExchange, contracts.ProjectCreatedRoutingKey, amqpMsg); err != nil {
 		log.Printf("Failed to publish message to RabbitMQ: %v", err)
 		return nil, status.Error(codes.Internal, "failed to publish message to queue")
