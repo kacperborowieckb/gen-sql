@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
+	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
 	"google.golang.org/grpc"
@@ -19,12 +20,14 @@ import (
 // It holds dependencies like the database pool.
 type dataServer struct {
 	pb.UnimplementedDataServiceServer
-	dbPool *sql.DB
+	dbPool   *sql.DB
+	mqClient *messaging.RabbitMQ
 }
 
-func NewDataServer(dbPool *sql.DB) *dataServer {
+func NewDataServer(dbPool *sql.DB, mqClient *messaging.RabbitMQ) *dataServer {
 	return &dataServer{
-		dbPool: dbPool,
+		dbPool:   dbPool,
+		mqClient: mqClient,
 	}
 }
 
@@ -42,6 +45,20 @@ func main() {
 	}
 	defer dbPool.Close()
 
+	// --- RabbitMQ Client Setup ---
+	rabbitMQURI := env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
+
+	mqClient, err := messaging.NewRabbitMQ(rabbitMQURI)
+	if err != nil {
+		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+	}
+	defer mqClient.Close()
+
+	if err := mqClient.SetupAppTopology(); err != nil {
+		log.Fatalf("Failed to setup RabbitMQ topology: %v", err)
+	}
+	// --- End RabbitMQ Client Setup ---
+
 	// --- gRPC Server Setup ---
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -50,7 +67,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	s := NewDataServer(dbPool)
+	s := NewDataServer(dbPool, mqClient)
 
 	pb.RegisterDataServiceServer(grpcServer, s)
 

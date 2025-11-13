@@ -33,7 +33,7 @@ services:
     environment:
       PORT: ${API_PORT}
       # Address for the gRPC server (data service)
-      DATA_SERVICE_ADDR: "data:8081" 
+      DATA_SERVICE_ADDR: "data:8081"
       # Use "true" for local
       DATA_SERVICE_INSECURE: "true"
     ports:
@@ -51,7 +51,10 @@ services:
     environment:
       PORT: 8081
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      RABBITMQ_URI: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       db:
         condition: service_healthy
 
@@ -61,10 +64,12 @@ services:
       dockerfile: services/generator/Dockerfile
     environment:
       PORT: 8082
-      AMQP_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       GENERATOR_QUEUE: ${GENERATOR_QUEUE_NAME}
+      RABBITMQ_URI: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      db:
         condition: service_healthy
 
   query:
@@ -80,5 +85,3 @@ services:
 
 volumes:
   db_data: {}
-
-

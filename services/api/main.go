@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
+	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
 	"github.com/kacperborowieckb/gen-sql/utils/health"
 	"github.com/kacperborowieckb/gen-sql/utils/shutdown"
@@ -17,6 +18,7 @@ import (
 
 type apiServer struct {
 	dataClient pb.DataServiceClient
+	mqClient   *messaging.RabbitMQ
 }
 
 func main() {
@@ -45,8 +47,24 @@ func main() {
 
 	dataClient := pb.NewDataServiceClient(conn)
 
+	// --- RabbitMQ Client Setup ---
+	rabbitMQURI := env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
+
+	mqClient, err := messaging.NewRabbitMQ(rabbitMQURI)
+	if err != nil {
+		log.Fatalf("Failed to connect to RabbitMQ: %v", err)
+	}
+
+	defer mqClient.Close()
+
+	if err := mqClient.SetupAppTopology(); err != nil {
+		log.Fatalf("Failed to setup RabbitMQ topology: %v", err)
+	}
+	// --- End RabbitMQ Client Setup ---
+
 	s := &apiServer{
 		dataClient: dataClient,
+		mqClient:   mqClient,
 	}
 	// --- End gRPC Client Setup ---
 
