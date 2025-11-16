@@ -10,10 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
 	"github.com/kacperborowieckb/gen-sql/utils/errors"
 	"github.com/kacperborowieckb/gen-sql/utils/json"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -100,4 +102,44 @@ func (s *apiServer) handleStartDataGeneration(w http.ResponseWriter, r *http.Req
 	}
 
 	json.WriteJSON(w, statusCode, responsePayload)
+}
+
+func (s *apiServer) HandleGetProjectData(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	projectID := chi.URLParam(r, "id")
+
+	if projectID == "" {
+		errors.BadRequestResponse(w, r, fmt.Errorf("project ID is required"))
+		return
+	}
+
+	grpcRequest := &pb.GetProjectDataRequest{
+		ProjectId: projectID,
+	}
+
+	log.Printf("Gateway: Forwarding GetProjectData request for %s to DataService", projectID)
+	grpcResponse, err := s.dataClient.GetProjectData(ctx, grpcRequest)
+
+	if err != nil {
+		st, _ := status.FromError(err)
+		httpCode := grpcStatusCodeToHTTP(st.Code())
+		json.WriteJSONError(w, httpCode, st.Message())
+		return
+	}
+
+	json.WriteJSON(w, http.StatusOK, grpcResponse.JsonData)
+}
+
+func grpcStatusCodeToHTTP(code codes.Code) int {
+	switch code {
+	case codes.InvalidArgument:
+		return http.StatusBadRequest
+	case codes.NotFound:
+		return http.StatusNotFound
+	case codes.Internal:
+		return http.StatusInternalServerError
+	default:
+		return http.StatusInternalServerError
+	}
 }

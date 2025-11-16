@@ -6,6 +6,7 @@ option go_package = "github.com/kacperborowieckb/gen-sql/shared/gen";
 
 service DataService {
   rpc StartDataGeneration(StartDataGenerationRequest) returns (StartDataGenerationResponse);
+  rpc GetProjectData(GetProjectDataRequest) returns (GetProjectDataResponse);
 }
 
 message StartDataGenerationRequest {
@@ -19,5 +20,13 @@ message StartDataGenerationResponse {
   string generation_job_id = 1;
   string message = 2;
   bool success = 3;
+}
+
+message GetProjectDataRequest {
+  string project_id = 1;
+}
+
+message GetProjectDataResponse {
+  string json_data = 1;
 }
 

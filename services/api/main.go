@@ -77,6 +77,7 @@ func main() {
 
 	r.Get("/health", health.Handler)
 	r.Post("/projects", s.handleStartDataGeneration)
+	r.Get("/projects/{id}", s.HandleGetProjectData)
 
 	srv := &http.Server{Addr: ":" + port, Handler: r}
 
