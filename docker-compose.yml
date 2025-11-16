@@ -6,9 +6,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      # test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "echo test test ${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -17,6 +18,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
       - "${RABBITMQ_AMQP_PORT}:5672"
       - "${RABBITMQ_MGMT_PORT}:15672"
@@ -64,7 +68,9 @@ services:
       dockerfile: services/generator/Dockerfile
     environment:
       PORT: 8082
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
       GENERATOR_QUEUE: ${GENERATOR_QUEUE_NAME}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       RABBITMQ_URI: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
       rabbitmq:
