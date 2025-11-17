@@ -20,6 +20,14 @@ func WriteJSON(w http.ResponseWriter, status int, data any) error {
 	return json.NewEncoder(w).Encode(data)
 }
 
+func WriteRawJSON(w http.ResponseWriter, status int, data []byte) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_, err := w.Write(data)
+
+	return err
+}
+
 func ReadJSON(w http.ResponseWriter, r *http.Request, data any) error {
 	maxBytes := 1_048_578
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))

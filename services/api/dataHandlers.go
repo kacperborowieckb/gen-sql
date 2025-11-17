@@ -128,7 +128,7 @@ func (s *apiServer) HandleGetProjectData(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	json.WriteJSON(w, http.StatusOK, grpcResponse.JsonData)
+	json.WriteRawJSON(w, http.StatusOK, []byte(grpcResponse.JsonData))
 }
 
 func grpcStatusCodeToHTTP(code codes.Code) int {
