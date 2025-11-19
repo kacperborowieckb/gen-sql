@@ -237,6 +237,86 @@ func (x *GetProjectDataResponse) GetJsonData() string {
 	return ""
 }
 
+type GetProjectsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProjectsRequest) Reset() {
+	*x = GetProjectsRequest{}
+	mi := &file_proto_data_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProjectsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProjectsRequest) ProtoMessage() {}
+
+func (x *GetProjectsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_data_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProjectsRequest.ProtoReflect.Descriptor instead.
+func (*GetProjectsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_data_proto_rawDescGZIP(), []int{4}
+}
+
+type GetProjectsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProjectIds    []string               `protobuf:"bytes,1,rep,name=project_ids,json=projectIds,proto3" json:"project_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProjectsResponse) Reset() {
+	*x = GetProjectsResponse{}
+	mi := &file_proto_data_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProjectsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProjectsResponse) ProtoMessage() {}
+
+func (x *GetProjectsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_data_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProjectsResponse.ProtoReflect.Descriptor instead.
+func (*GetProjectsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_data_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetProjectsResponse) GetProjectIds() []string {
+	if x != nil {
+		return x.ProjectIds
+	}
+	return nil
+}
+
 var File_proto_data_proto protoreflect.FileDescriptor
 
 const file_proto_data_proto_rawDesc = "" +
@@ -257,10 +337,15 @@ const file_proto_data_proto_rawDesc = "" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\"5\n" +
 	"\x16GetProjectDataResponse\x12\x1b\n" +
-	"\tjson_data\x18\x01 \x01(\tR\bjsonData2\xb2\x01\n" +
+	"\tjson_data\x18\x01 \x01(\tR\bjsonData\"\x14\n" +
+	"\x12GetProjectsRequest\"6\n" +
+	"\x13GetProjectsResponse\x12\x1f\n" +
+	"\vproject_ids\x18\x01 \x03(\tR\n" +
+	"projectIds2\xf4\x01\n" +
 	"\vDataService\x12X\n" +
 	"\x13StartDataGeneration\x12\x1f.gen.StartDataGenerationRequest\x1a .gen.StartDataGenerationResponse\x12I\n" +
-	"\x0eGetProjectData\x12\x1a.gen.GetProjectDataRequest\x1a\x1b.gen.GetProjectDataResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
+	"\x0eGetProjectData\x12\x1a.gen.GetProjectDataRequest\x1a\x1b.gen.GetProjectDataResponse\x12@\n" +
+	"\vGetProjects\x12\x17.gen.GetProjectsRequest\x1a\x18.gen.GetProjectsResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
 
 var (
 	file_proto_data_proto_rawDescOnce sync.Once
@@ -274,20 +359,24 @@ func file_proto_data_proto_rawDescGZIP() []byte {
 	return file_proto_data_proto_rawDescData
 }
 
-var file_proto_data_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_data_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_data_proto_goTypes = []any{
 	(*StartDataGenerationRequest)(nil),  // 0: gen.StartDataGenerationRequest
 	(*StartDataGenerationResponse)(nil), // 1: gen.StartDataGenerationResponse
 	(*GetProjectDataRequest)(nil),       // 2: gen.GetProjectDataRequest
 	(*GetProjectDataResponse)(nil),      // 3: gen.GetProjectDataResponse
+	(*GetProjectsRequest)(nil),          // 4: gen.GetProjectsRequest
+	(*GetProjectsResponse)(nil),         // 5: gen.GetProjectsResponse
 }
 var file_proto_data_proto_depIdxs = []int32{
 	0, // 0: gen.DataService.StartDataGeneration:input_type -> gen.StartDataGenerationRequest
 	2, // 1: gen.DataService.GetProjectData:input_type -> gen.GetProjectDataRequest
-	1, // 2: gen.DataService.StartDataGeneration:output_type -> gen.StartDataGenerationResponse
-	3, // 3: gen.DataService.GetProjectData:output_type -> gen.GetProjectDataResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	4, // 2: gen.DataService.GetProjects:input_type -> gen.GetProjectsRequest
+	1, // 3: gen.DataService.StartDataGeneration:output_type -> gen.StartDataGenerationResponse
+	3, // 4: gen.DataService.GetProjectData:output_type -> gen.GetProjectDataResponse
+	5, // 5: gen.DataService.GetProjects:output_type -> gen.GetProjectsResponse
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -304,7 +393,7 @@ func file_proto_data_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_data_proto_rawDesc), len(file_proto_data_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -204,3 +204,34 @@ func scanDynamicRows(rows *sql.Rows) ([]map[string]interface{}, error) {
 
 	return results, nil
 }
+
+func (s *dataServer) GetProjects(ctx context.Context, in *pb.GetProjectsRequest) (*pb.GetProjectsResponse, error) {
+	const query = `SELECT project_id FROM generation_projects`
+
+	rows, err := s.dbPool.QueryContext(ctx, query)
+	if err != nil {
+		log.Printf("Failed to query project IDs: %v", err)
+		return nil, status.Error(codes.Internal, "failed to fetch project list")
+	}
+	defer rows.Close()
+
+	projectIDs := []string{}
+
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			log.Printf("Failed to scan project ID: %v", err)
+			return nil, status.Error(codes.Internal, "failed to scan project data")
+		}
+		projectIDs = append(projectIDs, id)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating rows: %v", err)
+		return nil, status.Error(codes.Internal, "error reading project list")
+	}
+
+	return &pb.GetProjectsResponse{
+		ProjectIds: projectIDs,
+	}, nil
+}

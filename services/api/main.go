@@ -76,8 +76,14 @@ func main() {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Get("/health", health.Handler)
-	r.Post("/projects", s.handleStartDataGeneration)
-	r.Get("/projects/{id}", s.HandleGetProjectData)
+	r.Route("/projects", func(r chi.Router) {
+		r.Get("/", s.handleGetProjects)
+		r.Post("/", s.handleStartDataGeneration)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", s.handleGetProjectData)
+		})
+	})
 
 	srv := &http.Server{Addr: ":" + port, Handler: r}
 

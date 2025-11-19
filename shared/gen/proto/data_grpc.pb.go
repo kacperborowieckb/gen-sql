@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	DataService_StartDataGeneration_FullMethodName = "/gen.DataService/StartDataGeneration"
 	DataService_GetProjectData_FullMethodName      = "/gen.DataService/GetProjectData"
+	DataService_GetProjects_FullMethodName         = "/gen.DataService/GetProjects"
 )
 
 // DataServiceClient is the client API for DataService service.
@@ -29,6 +30,7 @@ const (
 type DataServiceClient interface {
 	StartDataGeneration(ctx context.Context, in *StartDataGenerationRequest, opts ...grpc.CallOption) (*StartDataGenerationResponse, error)
 	GetProjectData(ctx context.Context, in *GetProjectDataRequest, opts ...grpc.CallOption) (*GetProjectDataResponse, error)
+	GetProjects(ctx context.Context, in *GetProjectsRequest, opts ...grpc.CallOption) (*GetProjectsResponse, error)
 }
 
 type dataServiceClient struct {
@@ -59,12 +61,23 @@ func (c *dataServiceClient) GetProjectData(ctx context.Context, in *GetProjectDa
 	return out, nil
 }
 
+func (c *dataServiceClient) GetProjects(ctx context.Context, in *GetProjectsRequest, opts ...grpc.CallOption) (*GetProjectsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProjectsResponse)
+	err := c.cc.Invoke(ctx, DataService_GetProjects_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DataServiceServer is the server API for DataService service.
 // All implementations must embed UnimplementedDataServiceServer
 // for forward compatibility.
 type DataServiceServer interface {
 	StartDataGeneration(context.Context, *StartDataGenerationRequest) (*StartDataGenerationResponse, error)
 	GetProjectData(context.Context, *GetProjectDataRequest) (*GetProjectDataResponse, error)
+	GetProjects(context.Context, *GetProjectsRequest) (*GetProjectsResponse, error)
 	mustEmbedUnimplementedDataServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedDataServiceServer) StartDataGeneration(context.Context, *Star
 }
 func (UnimplementedDataServiceServer) GetProjectData(context.Context, *GetProjectDataRequest) (*GetProjectDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProjectData not implemented")
+}
+func (UnimplementedDataServiceServer) GetProjects(context.Context, *GetProjectsRequest) (*GetProjectsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
 }
 func (UnimplementedDataServiceServer) mustEmbedUnimplementedDataServiceServer() {}
 func (UnimplementedDataServiceServer) testEmbeddedByValue()                     {}
@@ -138,6 +154,24 @@ func _DataService_GetProjectData_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DataService_GetProjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProjectsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataServiceServer).GetProjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataService_GetProjects_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataServiceServer).GetProjects(ctx, req.(*GetProjectsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DataService_ServiceDesc is the grpc.ServiceDesc for DataService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var DataService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProjectData",
 			Handler:    _DataService_GetProjectData_Handler,
+		},
+		{
+			MethodName: "GetProjects",
+			Handler:    _DataService_GetProjects_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

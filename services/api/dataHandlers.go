@@ -104,7 +104,23 @@ func (s *apiServer) handleStartDataGeneration(w http.ResponseWriter, r *http.Req
 	json.WriteJSON(w, statusCode, responsePayload)
 }
 
-func (s *apiServer) HandleGetProjectData(w http.ResponseWriter, r *http.Request) {
+func (s *apiServer) handleGetProjects(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	grpcResponse, err := s.dataClient.GetProjects(ctx, &pb.GetProjectsRequest{})
+
+	if err != nil {
+		st, _ := status.FromError(err)
+		httpCode := grpcStatusCodeToHTTP(st.Code())
+
+		json.WriteJSONError(w, httpCode, st.Message())
+		return
+	}
+
+	json.WriteJSON(w, http.StatusOK, grpcResponse)
+}
+
+func (s *apiServer) handleGetProjectData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	projectID := chi.URLParam(r, "id")
