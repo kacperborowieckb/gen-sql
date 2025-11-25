@@ -12,6 +12,7 @@ deps:
 	go get github.com/google/uuid@v1.6.0
 	go mod tidy
 	pip install pre-commit
+	pre-commit install --hook-type pre-commit --hook-type commit-msg
 	npm install --prefix ./web
 
 .PHONY: proto-tools
