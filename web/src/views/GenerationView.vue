@@ -1,8 +1,3 @@
 <template>
-  <main>
-    Generation View
-  </main>
+  dsafa
 </template>
-
-<script setup lang="ts">
-</script>

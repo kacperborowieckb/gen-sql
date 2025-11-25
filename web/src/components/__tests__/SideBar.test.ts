@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 
-import SideBar from '@/components/SideBar.vue'
+import { SideBar } from '@/components'
 
 describe('SideBar.vue', () => {
   it('should render', () => {
