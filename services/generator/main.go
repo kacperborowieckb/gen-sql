@@ -10,17 +10,21 @@ import (
 	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
+	"github.com/kacperborowieckb/gen-sql/utils/gemini"
+	"google.golang.org/genai"
 )
 
 type generatorServer struct {
-	dbPool   *sql.DB
-	mqClient *messaging.RabbitMQ
+	dbPool      *sql.DB
+	mqClient    *messaging.RabbitMQ
+	genaiClient *genai.Client
 }
 
-func NewGeneratorServer(dbPool *sql.DB, mqClient *messaging.RabbitMQ) *generatorServer {
+func NewGeneratorServer(dbPool *sql.DB, mqClient *messaging.RabbitMQ, genaiClient *genai.Client) *generatorServer {
 	return &generatorServer{
-		dbPool:   dbPool,
-		mqClient: mqClient,
+		dbPool:      dbPool,
+		mqClient:    mqClient,
+		genaiClient: genaiClient,
 	}
 }
 
@@ -28,12 +32,7 @@ func main() {
 	log.Println("Starting generator service...")
 
 	// --- Database Setup ---
-	dbConfig, err := db.DBConfig()
-	if err != nil {
-		log.Fatalf("Failed to load database config: %v", err)
-	}
-
-	dbPool, err := db.NewConnection(dbConfig)
+	dbPool, err := db.NewConnection(env.GetString("DATABASE_URL", ""))
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -52,8 +51,14 @@ func main() {
 		log.Fatalf("Failed to setup RabbitMQ topology: %v", err)
 	}
 
+	genaiClient, err := gemini.NewConnection()
+
+	if err != nil {
+		log.Fatalf("Failed to setup gemini client: %v", err)
+	}
+
 	// --- Create Server Instance ---
-	s := NewGeneratorServer(dbPool, mqClient)
+	s := NewGeneratorServer(dbPool, mqClient, genaiClient)
 
 	// --- Start Consuming Messages ---
 	log.Println("Starting consumer for queue:", messaging.DataGenerationQueue)
