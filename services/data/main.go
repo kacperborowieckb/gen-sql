@@ -34,12 +34,7 @@ func NewDataServer(dbPool *sql.DB, mqClient *messaging.RabbitMQ) *dataServer {
 func main() {
 	port := env.GetString("PORT", "8081")
 
-	dbConfig, err := db.DBConfig()
-	if err != nil {
-		log.Fatalf("Failed to load database config: %v", err)
-	}
-
-	dbPool, err := db.NewConnection(dbConfig)
+	dbPool, err := db.NewConnection(env.GetString("DATABASE_URL", ""))
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
