@@ -83,7 +83,6 @@ func (s *dataServer) GetProjectData(ctx context.Context, in *pb.GetProjectDataRe
 	tx, err := s.dbPool.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		log.Printf("Failed to begin transaction: %v", err)
-		// Replaced errors.InternalServerError
 		return nil, status.Error(codes.Internal, "failed to begin transaction")
 	}
 	defer tx.Rollback()
@@ -93,7 +92,6 @@ func (s *dataServer) GetProjectData(ctx context.Context, in *pb.GetProjectDataRe
 	tableRows, err := tx.QueryContext(ctx, tablesQuery, projectID)
 	if err != nil {
 		log.Printf("Failed to query project schema: %v", err)
-		// Replaced errors.InternalServerError
 		return nil, status.Error(codes.Internal, "failed to query project schema")
 	}
 	defer tableRows.Close()
@@ -119,7 +117,6 @@ func (s *dataServer) GetProjectData(ctx context.Context, in *pb.GetProjectDataRe
 	setSearchPathSQL := fmt.Sprintf("SET LOCAL search_path = %s", pq.QuoteIdentifier(projectID))
 	if _, err := tx.ExecContext(ctx, setSearchPathSQL); err != nil {
 		log.Printf("Failed to set search path: %v", err)
-		// Replaced errors.InternalServerError
 		return nil, status.Error(codes.Internal, "failed to set search path")
 	}
 
@@ -132,15 +129,13 @@ func (s *dataServer) GetProjectData(ctx context.Context, in *pb.GetProjectDataRe
 
 		if err != nil {
 			log.Printf("Failed to query table %s: %v", tableName, err)
-			// Replaced errors.InternalServerError
 			return nil, status.Error(codes.Internal, "failed to query table")
 		}
 
-		tableData, err := scanDynamicRows(rows) // Helper function is unchanged
+		tableData, err := scanDynamicRows(rows)
 
 		if err != nil {
 			log.Printf("Failed to scan data from table %s: %v", tableName, err)
-			// Replaced errors.InternalServerError
 			return nil, status.Error(codes.Internal, "failed to scan data from table")
 		}
 
@@ -149,22 +144,17 @@ func (s *dataServer) GetProjectData(ctx context.Context, in *pb.GetProjectDataRe
 		finalResponse[tableName] = tableData
 	}
 
-	// Marshal the final map to a JSON string
 	jsonBytes, err := json.Marshal(finalResponse)
 	if err != nil {
 		log.Printf("Failed to marshal final response: %v", err)
-		// Replaced errors.InternalServerError
 		return nil, status.Error(codes.Internal, "failed to marshal JSON response")
 	}
 
-	// Replaced jsonUtils.WriteJSON(w, http.StatusOK, finalResponse)
 	return &pb.GetProjectDataResponse{
 		JsonData: string(jsonBytes),
 	}, nil
 }
 
-// scanDynamicRows (Helper function)
-// This function is unchanged as its logic is independent of HTTP or gRPC.
 func scanDynamicRows(rows *sql.Rows) ([]map[string]interface{}, error) {
 	columns, err := rows.Columns()
 	if err != nil {
@@ -178,6 +168,7 @@ func scanDynamicRows(rows *sql.Rows) ([]map[string]interface{}, error) {
 		values := make([]interface{}, len(columns))
 		// Create a slice of *interface{} to pass to rows.Scan
 		scanArgs := make([]interface{}, len(values))
+
 		for i := range values {
 			scanArgs[i] = &values[i]
 		}
