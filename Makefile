@@ -11,6 +11,8 @@ deps:
 	go get google.golang.org/protobuf@latest
 	go get github.com/google/uuid@v1.6.0
 	go mod tidy
+	pip install pre-commit
+	npm install --prefix ./web
 
 .PHONY: proto-tools
 proto-tools:
