@@ -12,6 +12,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     ui({
+      colorMode: false,
       ui: {
         colors: {
           primary: "blue",

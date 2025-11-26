@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { ROUTES } from '@/constants'
 
-import GenerationView from '../views/GenerationView.vue'
+import GenerationView from '../views/GenerationView/GenerationView.vue'
 
 const { HOME, TALK_TO_DATA } = ROUTES
 
