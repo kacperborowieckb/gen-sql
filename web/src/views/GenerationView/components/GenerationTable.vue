@@ -1,61 +1,29 @@
 <template>
   <UCard variant="subtle" class="bg-white">
-    <UTable :data="data" class="flex-1 h-120" sticky />
+    <div v-if="isLoadingProjectData">
+      Loading..
+    </div>
+    <div v-else-if="!currentProjectData">
+      Generation in progress.
+    </div>
+    <div v-else class="flex flex-col gap-4">
+      <div class="flex items-center">
+        <p>Generated data:</p>
+        <div class="flex gap-2 items-center ml-auto">
+          <p>Currently selected table: </p>
+          <USelect class="w-48" v-model="selectedTable" :items="currentProjectTables" />
+        </div>
+      </div>
+      <UTable :data="currentProjectData[selectedTable ?? '']" class="flex-1 h-120" sticky />
+    </div>
   </UCard>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 
-const data = ref([
-  {
-    id: '4600',
-    date: '2024-03-11T15:30:00',
-    status: 'paid',
-    email: 'james.anderson@example.com',
-    amount: 594
-  },
-  {
-    id: '4599',
-    date: '2024-03-11T10:10:00',
-    status: 'failed',
-    email: 'mia.white@example.com',
-    amount: 276
-  },
-  {
-    id: '4598',
-    date: '2024-03-11T08:50:00',
-    status: 'refunded',
-    email: 'william.brown@example.com',
-    amount: 315
-  },
-  {
-    id: '4597',
-    date: '2024-03-10T19:45:00',
-    status: 'paid',
-    email: 'emma.davis@example.com',
-    amount: 529
-  },
-  {
-    id: '4596',
-    date: '2024-03-10T15:55:00',
-    status: 'paid',
-    email: 'ethan.harris@example.com',
-    amount: 639
-  },
-  {
-    id: '4597',
-    date: '2024-03-10T19:45:00',
-    status: 'paid',
-    email: 'emma.davis@example.com',
-    amount: 529
-  },
-  {
-    id: '4596',
-    date: '2024-03-10T15:55:00',
-    status: 'paid',
-    email: 'ethan.harris@example.com',
-    amount: 639
-  }
-])
+import { useProjectsStore } from '@/stores/projectsStore';
+
+const projectStore = useProjectsStore()
+const { currentProjectData, currentProjectTables, selectedTable, isLoadingProjectData } = storeToRefs(projectStore)
 </script>

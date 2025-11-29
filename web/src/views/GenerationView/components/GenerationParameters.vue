@@ -1,5 +1,8 @@
 <template>
   <UCard variant="subtle" class="bg-white">
+    <p class="font-bold mb-2">
+      Generate data for a new project.
+    </p>
     <UForm :validate="validate" :state="state" class="space-y-4" @submit="onSubmit">
       <div class="flex gap-4">
         <UFormField class="w-3/4" label="Instructions" name="instructions">
@@ -23,6 +26,7 @@
             class="items-center"
             :min="0"
             :max="2"
+            :step="0.1"
             :default-value="1"
             v-model="state.temperature"
           />
@@ -40,6 +44,7 @@
 import { reactive } from "vue";
 
 import type { FormError, FormSubmitEvent } from "@nuxt/ui";
+import { useProjectsStore } from "@/stores/projectsStore";
 
 interface Parameters {
   instructions: string;
@@ -56,6 +61,8 @@ const state = reactive<Parameters>({
 });
 
 type Schema = typeof state;
+
+const projectStore = useProjectsStore()
 
 function validate(state: Partial<Schema>): FormError[] {
   const errors = [];
@@ -81,7 +88,7 @@ function validate(state: Partial<Schema>): FormError[] {
   }
 
   if (!temperature || temperature < 0 || temperature > 2) {
-    errors.push({ name: "temperature", message: "Required and between 1-100" });
+    errors.push({ name: "temperature", message: "Required and between 0.0-2.0" });
   }
 
   return errors;
@@ -90,10 +97,6 @@ function validate(state: Partial<Schema>): FormError[] {
 const toast = useToast();
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: "Success", description: "Generation started", color: "success" });
-  console.log(event.data);
-
-  //TODO: this is mock call till be is not ready, implement real one
 
   const { instructions, rowsToGenerate, schemaFile, temperature } = event.data;
 
@@ -104,10 +107,20 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   formPayload.append("temperature", temperature.toString());
   formPayload.append("ddlSchema", schemaFile!, schemaFile!.name);
 
-  const res = await fetch("http://localhost:8080/projects", {
-    method: "POST",
-    body: formPayload,
-  });
-  console.info(res);
+  try {
+    const res = await fetch("http://localhost:8080/projects", {
+      method: "POST",
+      body: formPayload,
+    });
+
+    const data = await res.json()
+
+    projectStore.fetchProjects()
+    projectStore.selectedProjectId = data.projectId
+
+    toast.add({ title: "Success", description: "Generation started", color: "success" });
+  } catch {
+    toast.add({ title: "Error", description: "Generation failed", color: "error" });
+  }
 }
 </script>

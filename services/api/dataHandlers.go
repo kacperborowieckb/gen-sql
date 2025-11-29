@@ -125,7 +125,17 @@ func (s *apiServer) handleGetProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.WriteJSON(w, http.StatusOK, grpcResponse)
+	type ProjectsResponse struct {
+		ProjectIds []string `json:"projectIds"`
+	}
+
+	resp := ProjectsResponse{
+		ProjectIds: grpcResponse.ProjectIds,
+	}
+
+	log.Print("RESP")
+
+	json.WriteJSON(w, http.StatusOK, resp)
 }
 
 func (s *apiServer) handleGetProjectData(w http.ResponseWriter, r *http.Request) {
