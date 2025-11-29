@@ -23,16 +23,17 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 	}
 
 	const insertSQL string = `
-		INSERT INTO generation_projects (project_id, ddl_schema, generation_instructions, max_rows)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO generation_projects (project_id, ddl_schema, instructions, rows_to_generate, temperature)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (project_id) DO NOTHING;
 	`
 
 	_, err := s.dbPool.ExecContext(ctx, insertSQL,
 		in.ProjectId,
 		in.DdlSchema,
-		in.GenerationInstructions,
-		in.MaxRows,
+		in.Instructions,
+		in.RowsToGenerate,
+		in.Temperature,
 	)
 
 	if err != nil {
@@ -40,10 +41,11 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 	}
 
 	event := messaging.ProjectCreatedEvent{
-		ProjectID:              in.ProjectId,
-		DdlSchema:              in.DdlSchema,
-		GenerationInstructions: in.GenerationInstructions,
-		MaxRows:                in.MaxRows,
+		ProjectID:      in.ProjectId,
+		DdlSchema:      in.DdlSchema,
+		Instructions:   in.Instructions,
+		RowsToGenerate: in.RowsToGenerate,
+		Temperature:    in.Temperature,
 	}
 
 	eventData, err := json.Marshal(event)

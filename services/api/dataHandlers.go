@@ -26,18 +26,25 @@ func (s *apiServer) handleStartDataGeneration(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	instructions := r.FormValue("generationInstructions")
-	maxRowsStr := r.FormValue("maxRows")
+	instructions := r.FormValue("instructions")
+	rowsToGenerateStr := r.FormValue("rowsToGenerate")
+	temperatureStr := r.FormValue("temperature")
 
-	maxRows, err := strconv.ParseInt(maxRowsStr, 10, 32)
+	rowsToGenerate, err := strconv.ParseInt(rowsToGenerateStr, 10, 32)
 	if err != nil {
-		errors.BadRequestResponse(w, r, fmt.Errorf("invalid maxRows: must be an integer: %w", err))
+		errors.BadRequestResponse(w, r, fmt.Errorf("invalid rowsToGenerate: must be an integer: %w", err))
 		return
 	}
 
-	file, fileHeader, err := r.FormFile("ddlFile")
+	temperature, err := strconv.ParseFloat(temperatureStr, 32)
 	if err != nil {
-		errors.BadRequestResponse(w, r, fmt.Errorf("error retrieving 'ddlFile': %w", err))
+		errors.BadRequestResponse(w, r, fmt.Errorf("invalid temperature: must be a number: %w", err))
+		return
+	}
+
+	file, fileHeader, err := r.FormFile("ddlSchema")
+	if err != nil {
+		errors.BadRequestResponse(w, r, fmt.Errorf("error retrieving 'ddlSchema': %w", err))
 		return
 	}
 	defer file.Close()
@@ -56,21 +63,22 @@ func (s *apiServer) handleStartDataGeneration(w http.ResponseWriter, r *http.Req
 	ddlSchema := string(ddlBytes)
 
 	if ddlSchema == "" {
-		errors.BadRequestResponse(w, r, fmt.Errorf("ddlFile content cannot be empty"))
+		errors.BadRequestResponse(w, r, fmt.Errorf("ddlSchema content cannot be empty"))
 		return
 	}
-	if maxRows <= 0 {
-		errors.BadRequestResponse(w, r, fmt.Errorf("maxRows must be greater than 0"))
+	if rowsToGenerate <= 0 {
+		errors.BadRequestResponse(w, r, fmt.Errorf("rowsToGenerate must be greater than 0"))
 		return
 	}
 
 	projectId := uuid.New().String()
 
 	grpcReq := &pb.StartDataGenerationRequest{
-		ProjectId:              projectId,
-		DdlSchema:              ddlSchema,
-		GenerationInstructions: instructions,
-		MaxRows:                int32(maxRows),
+		ProjectId:      projectId,
+		DdlSchema:      ddlSchema,
+		Instructions:   instructions,
+		RowsToGenerate: int32(rowsToGenerate),
+		Temperature:    float32(temperature),
 	}
 
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)

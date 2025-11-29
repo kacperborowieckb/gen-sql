@@ -22,13 +22,14 @@ const (
 )
 
 type StartDataGenerationRequest struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId              string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	DdlSchema              string                 `protobuf:"bytes,2,opt,name=ddl_schema,json=ddlSchema,proto3" json:"ddl_schema,omitempty"`
-	MaxRows                int32                  `protobuf:"varint,3,opt,name=max_rows,json=maxRows,proto3" json:"max_rows,omitempty"`
-	GenerationInstructions string                 `protobuf:"bytes,4,opt,name=generation_instructions,json=generationInstructions,proto3" json:"generation_instructions,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	DdlSchema      string                 `protobuf:"bytes,2,opt,name=ddl_schema,json=ddlSchema,proto3" json:"ddl_schema,omitempty"`
+	RowsToGenerate int32                  `protobuf:"varint,3,opt,name=rows_to_generate,json=rowsToGenerate,proto3" json:"rows_to_generate,omitempty"`
+	Instructions   string                 `protobuf:"bytes,4,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	Temperature    float32                `protobuf:"fixed32,5,opt,name=temperature,proto3" json:"temperature,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *StartDataGenerationRequest) Reset() {
@@ -75,18 +76,25 @@ func (x *StartDataGenerationRequest) GetDdlSchema() string {
 	return ""
 }
 
-func (x *StartDataGenerationRequest) GetMaxRows() int32 {
+func (x *StartDataGenerationRequest) GetRowsToGenerate() int32 {
 	if x != nil {
-		return x.MaxRows
+		return x.RowsToGenerate
 	}
 	return 0
 }
 
-func (x *StartDataGenerationRequest) GetGenerationInstructions() string {
+func (x *StartDataGenerationRequest) GetInstructions() string {
 	if x != nil {
-		return x.GenerationInstructions
+		return x.Instructions
 	}
 	return ""
+}
+
+func (x *StartDataGenerationRequest) GetTemperature() float32 {
+	if x != nil {
+		return x.Temperature
+	}
+	return 0
 }
 
 type StartDataGenerationResponse struct {
@@ -321,14 +329,15 @@ var File_proto_data_proto protoreflect.FileDescriptor
 
 const file_proto_data_proto_rawDesc = "" +
 	"\n" +
-	"\x10proto/data.proto\x12\x03gen\"\xae\x01\n" +
+	"\x10proto/data.proto\x12\x03gen\"\xca\x01\n" +
 	"\x1aStartDataGenerationRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x1d\n" +
 	"\n" +
-	"ddl_schema\x18\x02 \x01(\tR\tddlSchema\x12\x19\n" +
-	"\bmax_rows\x18\x03 \x01(\x05R\amaxRows\x127\n" +
-	"\x17generation_instructions\x18\x04 \x01(\tR\x16generationInstructions\"}\n" +
+	"ddl_schema\x18\x02 \x01(\tR\tddlSchema\x12(\n" +
+	"\x10rows_to_generate\x18\x03 \x01(\x05R\x0erowsToGenerate\x12\"\n" +
+	"\finstructions\x18\x04 \x01(\tR\finstructions\x12 \n" +
+	"\vtemperature\x18\x05 \x01(\x02R\vtemperature\"}\n" +
 	"\x1bStartDataGenerationResponse\x12*\n" +
 	"\x11generation_job_id\x18\x01 \x01(\tR\x0fgenerationJobId\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +

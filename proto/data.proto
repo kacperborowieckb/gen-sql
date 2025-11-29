@@ -13,8 +13,9 @@ service DataService {
 message StartDataGenerationRequest {
   string project_id = 1;
   string ddl_schema = 2;
-  int32 max_rows = 3;
-  string generation_instructions = 4;
+  int32 rows_to_generate = 3;
+  string instructions = 4;
+  float temperature = 5;
 }
 
 message StartDataGenerationResponse {
