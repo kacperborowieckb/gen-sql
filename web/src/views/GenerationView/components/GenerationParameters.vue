@@ -22,8 +22,8 @@
           <USlider
             class="items-center"
             :min="0"
-            :max="100"
-            :default-value="50"
+            :max="2"
+            :default-value="1"
             v-model="state.temperature"
           />
         </UFormField>
@@ -52,7 +52,7 @@ const state = reactive<Parameters>({
   instructions: "",
   rowsToGenerate: 10,
   schemaFile: null,
-  temperature: 50,
+  temperature: 1.0,
 });
 
 type Schema = typeof state;
@@ -80,7 +80,7 @@ function validate(state: Partial<Schema>): FormError[] {
     errors.push({ name: "schemaFile", message: "File must be a .ddl file" });
   }
 
-  if (!temperature || temperature < 1 || temperature > 100) {
+  if (!temperature || temperature < 0 || temperature > 2) {
     errors.push({ name: "temperature", message: "Required and between 1-100" });
   }
 
@@ -95,19 +95,19 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
   //TODO: this is mock call till be is not ready, implement real one
 
-  const {instructions, rowsToGenerate, schemaFile, temperature} = event.data
+  const { instructions, rowsToGenerate, schemaFile, temperature } = event.data;
 
-  const formPayload = new FormData()
+  const formPayload = new FormData();
 
-  formPayload.append('instructions', instructions);
-  formPayload.append('rowsToGenerate', rowsToGenerate.toString());
-  formPayload.append('temperature', temperature.toString());
-  formPayload.append('ddlSchema', schemaFile!, schemaFile!.name);
+  formPayload.append("instructions", instructions);
+  formPayload.append("rowsToGenerate", rowsToGenerate.toString());
+  formPayload.append("temperature", temperature.toString());
+  formPayload.append("ddlSchema", schemaFile!, schemaFile!.name);
 
-  const res = await fetch('http://localhost:8080/projects', {
-    method: 'POST',
-    body: formPayload
-  })
-  console.info(res)
+  const res = await fetch("http://localhost:8080/projects", {
+    method: "POST",
+    body: formPayload,
+  });
+  console.info(res);
 }
 </script>
