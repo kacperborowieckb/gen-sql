@@ -9,7 +9,7 @@
         <UFormField class="w-lg" label="Database schema" name="schemaFile">
           <UFileUpload
             v-model="state.schemaFile"
-            accept="image/*"
+            accept=".ddl"
             class="min-h-24 w-lg"
             description="Upload .ddl file"
           />
@@ -19,7 +19,13 @@
       <p class="font-semibold">Advanced Parameters</p>
       <div class="flex gap-4">
         <UFormField class="grow" :label="`Temperature ${state.temperature}`" name="temperature">
-          <USlider class="items-center" :min="0" :max="100" :default-value="50" v-model="state.temperature" />
+          <USlider
+            class="items-center"
+            :min="0"
+            :max="100"
+            :default-value="50"
+            v-model="state.temperature"
+          />
         </UFormField>
         <UFormField class="w-md" label="Rows to generate" name="rowsToGenerate">
           <UInputNumber class="w-full" v-model="state.rowsToGenerate" orientation="vertical" />
@@ -56,8 +62,8 @@ function validate(state: Partial<Schema>): FormError[] {
 
   const { instructions, rowsToGenerate, schemaFile, temperature } = state;
 
-  if (!instructions?.length || instructions?.length > 100) {
-    errors.push({ name: "instructions", message: "Required and less then 250 chars" });
+  if (!!instructions && instructions?.length > 100) {
+    errors.push({ name: "instructions", message: "Less then 100 chars" });
   }
 
   if (!rowsToGenerate || rowsToGenerate < 1 || rowsToGenerate > 100) {
@@ -66,6 +72,12 @@ function validate(state: Partial<Schema>): FormError[] {
 
   if (!schemaFile) {
     errors.push({ name: "schemaFile", message: "Schema file is required" });
+  }
+
+  const fileName = schemaFile?.name.toLowerCase();
+
+  if (!fileName?.endsWith(".ddl")) {
+    errors.push({ name: "schemaFile", message: "File must be a .ddl file" });
   }
 
   if (!temperature || temperature < 1 || temperature > 100) {
@@ -80,5 +92,22 @@ const toast = useToast();
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   toast.add({ title: "Success", description: "Generation started", color: "success" });
   console.log(event.data);
+
+  //TODO: this is mock call till be is not ready, implement real one
+
+  const {instructions, rowsToGenerate, schemaFile, temperature} = event.data
+
+  const formPayload = new FormData()
+
+  formPayload.append('instructions', instructions);
+  formPayload.append('rowsToGenerate', rowsToGenerate.toString());
+  formPayload.append('temperature', temperature.toString());
+  formPayload.append('ddlSchema', schemaFile!, schemaFile!.name);
+
+  const res = await fetch('http://localhost:8080/projects', {
+    method: 'POST',
+    body: formPayload
+  })
+  console.info(res)
 }
 </script>
