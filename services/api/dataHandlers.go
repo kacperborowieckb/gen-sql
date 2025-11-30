@@ -165,6 +165,39 @@ func (s *apiServer) handleGetProjectData(w http.ResponseWriter, r *http.Request)
 	json.WriteRawJSON(w, http.StatusOK, []byte(grpcResponse.JsonData))
 }
 
+func (s *apiServer) handleDeleteProject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	projectID := chi.URLParam(r, "id")
+
+	if projectID == "" {
+		errors.BadRequestResponse(w, r, fmt.Errorf("project ID is required"))
+		return
+	}
+
+	grpcRequest := &pb.DeleteProjectRequest{
+		ProjectId: projectID,
+	}
+
+	log.Printf("Gateway: Forwarding DeleteProject request for %s to DataService", projectID)
+	grpcResponse, err := s.dataClient.DeleteProject(ctx, grpcRequest)
+
+	if err != nil {
+		st, _ := status.FromError(err)
+		httpCode := grpcStatusCodeToHTTP(st.Code())
+
+		json.WriteJSONError(w, httpCode, st.Message())
+		return
+	}
+
+	statusCode := http.StatusOK
+	if !grpcResponse.Success {
+		statusCode = http.StatusNotFound
+	}
+
+	json.WriteJSON(w, statusCode, grpcResponse)
+}
+
 func grpcStatusCodeToHTTP(code codes.Code) int {
 	switch code {
 	case codes.InvalidArgument:

@@ -93,6 +93,7 @@ func main() {
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", s.handleGetProjectData)
+			r.Delete("/", s.handleDeleteProject)
 		})
 	})
 

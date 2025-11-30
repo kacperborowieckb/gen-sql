@@ -22,6 +22,7 @@ const (
 	DataService_StartDataGeneration_FullMethodName = "/gen.DataService/StartDataGeneration"
 	DataService_GetProjectData_FullMethodName      = "/gen.DataService/GetProjectData"
 	DataService_GetProjects_FullMethodName         = "/gen.DataService/GetProjects"
+	DataService_DeleteProject_FullMethodName       = "/gen.DataService/DeleteProject"
 )
 
 // DataServiceClient is the client API for DataService service.
@@ -31,6 +32,7 @@ type DataServiceClient interface {
 	StartDataGeneration(ctx context.Context, in *StartDataGenerationRequest, opts ...grpc.CallOption) (*StartDataGenerationResponse, error)
 	GetProjectData(ctx context.Context, in *GetProjectDataRequest, opts ...grpc.CallOption) (*GetProjectDataResponse, error)
 	GetProjects(ctx context.Context, in *GetProjectsRequest, opts ...grpc.CallOption) (*GetProjectsResponse, error)
+	DeleteProject(ctx context.Context, in *DeleteProjectRequest, opts ...grpc.CallOption) (*DeleteProjectResponse, error)
 }
 
 type dataServiceClient struct {
@@ -71,6 +73,16 @@ func (c *dataServiceClient) GetProjects(ctx context.Context, in *GetProjectsRequ
 	return out, nil
 }
 
+func (c *dataServiceClient) DeleteProject(ctx context.Context, in *DeleteProjectRequest, opts ...grpc.CallOption) (*DeleteProjectResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteProjectResponse)
+	err := c.cc.Invoke(ctx, DataService_DeleteProject_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DataServiceServer is the server API for DataService service.
 // All implementations must embed UnimplementedDataServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type DataServiceServer interface {
 	StartDataGeneration(context.Context, *StartDataGenerationRequest) (*StartDataGenerationResponse, error)
 	GetProjectData(context.Context, *GetProjectDataRequest) (*GetProjectDataResponse, error)
 	GetProjects(context.Context, *GetProjectsRequest) (*GetProjectsResponse, error)
+	DeleteProject(context.Context, *DeleteProjectRequest) (*DeleteProjectResponse, error)
 	mustEmbedUnimplementedDataServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedDataServiceServer) GetProjectData(context.Context, *GetProjec
 }
 func (UnimplementedDataServiceServer) GetProjects(context.Context, *GetProjectsRequest) (*GetProjectsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProjects not implemented")
+}
+func (UnimplementedDataServiceServer) DeleteProject(context.Context, *DeleteProjectRequest) (*DeleteProjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteProject not implemented")
 }
 func (UnimplementedDataServiceServer) mustEmbedUnimplementedDataServiceServer() {}
 func (UnimplementedDataServiceServer) testEmbeddedByValue()                     {}
@@ -172,6 +188,24 @@ func _DataService_GetProjects_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DataService_DeleteProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteProjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataServiceServer).DeleteProject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DataService_DeleteProject_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataServiceServer).DeleteProject(ctx, req.(*DeleteProjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DataService_ServiceDesc is the grpc.ServiceDesc for DataService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var DataService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProjects",
 			Handler:    _DataService_GetProjects_Handler,
+		},
+		{
+			MethodName: "DeleteProject",
+			Handler:    _DataService_DeleteProject_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

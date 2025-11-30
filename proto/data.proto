@@ -8,6 +8,7 @@ service DataService {
   rpc StartDataGeneration(StartDataGenerationRequest) returns (StartDataGenerationResponse);
   rpc GetProjectData(GetProjectDataRequest) returns (GetProjectDataResponse);
   rpc GetProjects(GetProjectsRequest) returns (GetProjectsResponse);
+  rpc DeleteProject(DeleteProjectRequest) returns (DeleteProjectResponse);
 }
 
 message StartDataGenerationRequest {
@@ -36,4 +37,13 @@ message GetProjectsRequest {}
 
 message GetProjectsResponse {
   repeated string project_ids = 1;
+}
+
+message DeleteProjectRequest {
+  string project_id = 1;
+}
+
+message DeleteProjectResponse {
+  bool success = 1;
+  string message = 2;
 }
