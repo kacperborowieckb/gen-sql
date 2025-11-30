@@ -23,16 +23,17 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 	}
 
 	const insertSQL string = `
-		INSERT INTO generation_projects (project_id, ddl_schema, generation_instructions, max_rows)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO generation_projects (project_id, ddl_schema, instructions, rows_to_generate, temperature)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (project_id) DO NOTHING;
 	`
 
 	_, err := s.dbPool.ExecContext(ctx, insertSQL,
 		in.ProjectId,
 		in.DdlSchema,
-		in.GenerationInstructions,
-		in.MaxRows,
+		in.Instructions,
+		in.RowsToGenerate,
+		in.Temperature,
 	)
 
 	if err != nil {
@@ -40,10 +41,11 @@ func (s *dataServer) StartDataGeneration(ctx context.Context, in *pb.StartDataGe
 	}
 
 	event := messaging.ProjectCreatedEvent{
-		ProjectID:              in.ProjectId,
-		DdlSchema:              in.DdlSchema,
-		GenerationInstructions: in.GenerationInstructions,
-		MaxRows:                in.MaxRows,
+		ProjectID:      in.ProjectId,
+		DdlSchema:      in.DdlSchema,
+		Instructions:   in.Instructions,
+		RowsToGenerate: in.RowsToGenerate,
+		Temperature:    in.Temperature,
 	}
 
 	eventData, err := json.Marshal(event)
@@ -224,5 +226,67 @@ func (s *dataServer) GetProjects(ctx context.Context, in *pb.GetProjectsRequest)
 
 	return &pb.GetProjectsResponse{
 		ProjectIds: projectIDs,
+	}, nil
+}
+
+func (s *dataServer) DeleteProject(ctx context.Context, in *pb.DeleteProjectRequest) (*pb.DeleteProjectResponse, error) {
+	projectID := in.ProjectId
+
+	log.Printf("Received DeleteProject request for project: %s", projectID)
+
+	if projectID == "" {
+		return nil, status.Error(codes.InvalidArgument, "project ID is required")
+	}
+
+	// Use a transaction to ensure both operations succeed or fail together
+	tx, err := s.dbPool.BeginTx(ctx, nil)
+	if err != nil {
+		log.Printf("Failed to begin transaction: %v", err)
+		return nil, status.Error(codes.Internal, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	// Drop the schema with CASCADE
+	dropSchemaSQL := fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", pq.QuoteIdentifier(projectID))
+	if _, err := tx.ExecContext(ctx, dropSchemaSQL); err != nil {
+		log.Printf("Failed to drop schema %s: %v", projectID, err)
+		return nil, status.Error(codes.Internal, "failed to drop schema")
+	}
+
+	log.Printf("Successfully dropped schema %s", projectID)
+
+	// Delete from generation_projects table
+	const deleteSQL = `DELETE FROM generation_projects WHERE project_id = $1`
+	result, err := tx.ExecContext(ctx, deleteSQL, projectID)
+	if err != nil {
+		log.Printf("Failed to delete project record: %v", err)
+		return nil, status.Error(codes.Internal, "failed to delete project record")
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("Failed to get rows affected: %v", err)
+		return nil, status.Error(codes.Internal, "failed to verify deletion")
+	}
+
+	if rowsAffected == 0 {
+		log.Printf("Project %s not found in generation_projects table", projectID)
+		return &pb.DeleteProjectResponse{
+			Success: false,
+			Message: "Project not found",
+		}, nil
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		log.Printf("Failed to commit transaction: %v", err)
+		return nil, status.Error(codes.Internal, "failed to commit transaction")
+	}
+
+	log.Printf("Successfully deleted project %s", projectID)
+
+	return &pb.DeleteProjectResponse{
+		Success: true,
+		Message: "Project deleted successfully",
 	}, nil
 }

@@ -22,13 +22,14 @@ const (
 )
 
 type StartDataGenerationRequest struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	ProjectId              string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
-	DdlSchema              string                 `protobuf:"bytes,2,opt,name=ddl_schema,json=ddlSchema,proto3" json:"ddl_schema,omitempty"`
-	MaxRows                int32                  `protobuf:"varint,3,opt,name=max_rows,json=maxRows,proto3" json:"max_rows,omitempty"`
-	GenerationInstructions string                 `protobuf:"bytes,4,opt,name=generation_instructions,json=generationInstructions,proto3" json:"generation_instructions,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId      string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	DdlSchema      string                 `protobuf:"bytes,2,opt,name=ddl_schema,json=ddlSchema,proto3" json:"ddl_schema,omitempty"`
+	RowsToGenerate int32                  `protobuf:"varint,3,opt,name=rows_to_generate,json=rowsToGenerate,proto3" json:"rows_to_generate,omitempty"`
+	Instructions   string                 `protobuf:"bytes,4,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	Temperature    float32                `protobuf:"fixed32,5,opt,name=temperature,proto3" json:"temperature,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *StartDataGenerationRequest) Reset() {
@@ -75,18 +76,25 @@ func (x *StartDataGenerationRequest) GetDdlSchema() string {
 	return ""
 }
 
-func (x *StartDataGenerationRequest) GetMaxRows() int32 {
+func (x *StartDataGenerationRequest) GetRowsToGenerate() int32 {
 	if x != nil {
-		return x.MaxRows
+		return x.RowsToGenerate
 	}
 	return 0
 }
 
-func (x *StartDataGenerationRequest) GetGenerationInstructions() string {
+func (x *StartDataGenerationRequest) GetInstructions() string {
 	if x != nil {
-		return x.GenerationInstructions
+		return x.Instructions
 	}
 	return ""
+}
+
+func (x *StartDataGenerationRequest) GetTemperature() float32 {
+	if x != nil {
+		return x.Temperature
+	}
+	return 0
 }
 
 type StartDataGenerationResponse struct {
@@ -317,18 +325,115 @@ func (x *GetProjectsResponse) GetProjectIds() []string {
 	return nil
 }
 
+type DeleteProjectRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProjectRequest) Reset() {
+	*x = DeleteProjectRequest{}
+	mi := &file_proto_data_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProjectRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProjectRequest) ProtoMessage() {}
+
+func (x *DeleteProjectRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_data_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProjectRequest.ProtoReflect.Descriptor instead.
+func (*DeleteProjectRequest) Descriptor() ([]byte, []int) {
+	return file_proto_data_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeleteProjectRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+type DeleteProjectResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteProjectResponse) Reset() {
+	*x = DeleteProjectResponse{}
+	mi := &file_proto_data_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteProjectResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteProjectResponse) ProtoMessage() {}
+
+func (x *DeleteProjectResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_data_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteProjectResponse.ProtoReflect.Descriptor instead.
+func (*DeleteProjectResponse) Descriptor() ([]byte, []int) {
+	return file_proto_data_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeleteProjectResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteProjectResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_proto_data_proto protoreflect.FileDescriptor
 
 const file_proto_data_proto_rawDesc = "" +
 	"\n" +
-	"\x10proto/data.proto\x12\x03gen\"\xae\x01\n" +
+	"\x10proto/data.proto\x12\x03gen\"\xca\x01\n" +
 	"\x1aStartDataGenerationRequest\x12\x1d\n" +
 	"\n" +
 	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x1d\n" +
 	"\n" +
-	"ddl_schema\x18\x02 \x01(\tR\tddlSchema\x12\x19\n" +
-	"\bmax_rows\x18\x03 \x01(\x05R\amaxRows\x127\n" +
-	"\x17generation_instructions\x18\x04 \x01(\tR\x16generationInstructions\"}\n" +
+	"ddl_schema\x18\x02 \x01(\tR\tddlSchema\x12(\n" +
+	"\x10rows_to_generate\x18\x03 \x01(\x05R\x0erowsToGenerate\x12\"\n" +
+	"\finstructions\x18\x04 \x01(\tR\finstructions\x12 \n" +
+	"\vtemperature\x18\x05 \x01(\x02R\vtemperature\"}\n" +
 	"\x1bStartDataGenerationResponse\x12*\n" +
 	"\x11generation_job_id\x18\x01 \x01(\tR\x0fgenerationJobId\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +
@@ -341,11 +446,18 @@ const file_proto_data_proto_rawDesc = "" +
 	"\x12GetProjectsRequest\"6\n" +
 	"\x13GetProjectsResponse\x12\x1f\n" +
 	"\vproject_ids\x18\x01 \x03(\tR\n" +
-	"projectIds2\xf4\x01\n" +
+	"projectIds\"5\n" +
+	"\x14DeleteProjectRequest\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\"K\n" +
+	"\x15DeleteProjectResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xbc\x02\n" +
 	"\vDataService\x12X\n" +
 	"\x13StartDataGeneration\x12\x1f.gen.StartDataGenerationRequest\x1a .gen.StartDataGenerationResponse\x12I\n" +
 	"\x0eGetProjectData\x12\x1a.gen.GetProjectDataRequest\x1a\x1b.gen.GetProjectDataResponse\x12@\n" +
-	"\vGetProjects\x12\x17.gen.GetProjectsRequest\x1a\x18.gen.GetProjectsResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
+	"\vGetProjects\x12\x17.gen.GetProjectsRequest\x1a\x18.gen.GetProjectsResponse\x12F\n" +
+	"\rDeleteProject\x12\x19.gen.DeleteProjectRequest\x1a\x1a.gen.DeleteProjectResponseB0Z.github.com/kacperborowieckb/gen-sql/shared/genb\x06proto3"
 
 var (
 	file_proto_data_proto_rawDescOnce sync.Once
@@ -359,7 +471,7 @@ func file_proto_data_proto_rawDescGZIP() []byte {
 	return file_proto_data_proto_rawDescData
 }
 
-var file_proto_data_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_data_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_proto_data_proto_goTypes = []any{
 	(*StartDataGenerationRequest)(nil),  // 0: gen.StartDataGenerationRequest
 	(*StartDataGenerationResponse)(nil), // 1: gen.StartDataGenerationResponse
@@ -367,16 +479,20 @@ var file_proto_data_proto_goTypes = []any{
 	(*GetProjectDataResponse)(nil),      // 3: gen.GetProjectDataResponse
 	(*GetProjectsRequest)(nil),          // 4: gen.GetProjectsRequest
 	(*GetProjectsResponse)(nil),         // 5: gen.GetProjectsResponse
+	(*DeleteProjectRequest)(nil),        // 6: gen.DeleteProjectRequest
+	(*DeleteProjectResponse)(nil),       // 7: gen.DeleteProjectResponse
 }
 var file_proto_data_proto_depIdxs = []int32{
 	0, // 0: gen.DataService.StartDataGeneration:input_type -> gen.StartDataGenerationRequest
 	2, // 1: gen.DataService.GetProjectData:input_type -> gen.GetProjectDataRequest
 	4, // 2: gen.DataService.GetProjects:input_type -> gen.GetProjectsRequest
-	1, // 3: gen.DataService.StartDataGeneration:output_type -> gen.StartDataGenerationResponse
-	3, // 4: gen.DataService.GetProjectData:output_type -> gen.GetProjectDataResponse
-	5, // 5: gen.DataService.GetProjects:output_type -> gen.GetProjectsResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	6, // 3: gen.DataService.DeleteProject:input_type -> gen.DeleteProjectRequest
+	1, // 4: gen.DataService.StartDataGeneration:output_type -> gen.StartDataGenerationResponse
+	3, // 5: gen.DataService.GetProjectData:output_type -> gen.GetProjectDataResponse
+	5, // 6: gen.DataService.GetProjects:output_type -> gen.GetProjectsResponse
+	7, // 7: gen.DataService.DeleteProject:output_type -> gen.DeleteProjectResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -393,7 +509,7 @@ func file_proto_data_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_data_proto_rawDesc), len(file_proto_data_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -11,6 +11,7 @@ deps:
 	go get google.golang.org/protobuf@latest
 	go get github.com/google/uuid@v1.6.0
 	go get google.golang.org/genai
+	go get github.com/go-chi/cors
 	go mod tidy
 	pip install pre-commit
 	pre-commit install --hook-type pre-commit --hook-type commit-msg

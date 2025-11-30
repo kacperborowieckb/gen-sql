@@ -1,0 +1,126 @@
+<template>
+  <UCard variant="subtle" class="bg-white">
+    <p class="font-bold mb-2">
+      Generate data for a new project.
+    </p>
+    <UForm :validate="validate" :state="state" class="space-y-4" @submit="onSubmit">
+      <div class="flex gap-4">
+        <UFormField class="w-3/4" label="Instructions" name="instructions">
+          <UTextarea class="w-full" v-model="state.instructions" :rows="5" />
+        </UFormField>
+
+        <UFormField class="w-lg" label="Database schema" name="schemaFile">
+          <UFileUpload
+            v-model="state.schemaFile"
+            accept=".ddl"
+            class="min-h-24 w-lg"
+            description="Upload .ddl file"
+          />
+        </UFormField>
+      </div>
+      <USeparator />
+      <p class="font-semibold">Advanced Parameters</p>
+      <div class="flex gap-4">
+        <UFormField class="grow" :label="`Temperature ${state.temperature}`" name="temperature">
+          <USlider
+            class="items-center"
+            :min="0"
+            :max="2"
+            :step="0.1"
+            :default-value="1"
+            v-model="state.temperature"
+          />
+        </UFormField>
+        <UFormField class="w-md" label="Rows to generate" name="rowsToGenerate">
+          <UInputNumber class="w-full" v-model="state.rowsToGenerate" orientation="vertical" />
+        </UFormField>
+      </div>
+      <UButton type="submit"> Generate </UButton>
+    </UForm>
+  </UCard>
+</template>
+
+<script setup lang="ts">
+import { reactive } from "vue";
+
+import type { FormError, FormSubmitEvent } from "@nuxt/ui";
+import { useProjectsStore } from "@/stores/projectsStore";
+
+interface Parameters {
+  instructions: string;
+  schemaFile: File | null;
+  temperature: number;
+  rowsToGenerate: number;
+}
+
+const state = reactive<Parameters>({
+  instructions: "",
+  rowsToGenerate: 10,
+  schemaFile: null,
+  temperature: 1.0,
+});
+
+type Schema = typeof state;
+
+const projectStore = useProjectsStore()
+
+function validate(state: Partial<Schema>): FormError[] {
+  const errors = [];
+
+  const { instructions, rowsToGenerate, schemaFile, temperature } = state;
+
+  if (!!instructions && instructions?.length > 100) {
+    errors.push({ name: "instructions", message: "Less then 100 chars" });
+  }
+
+  if (!rowsToGenerate || rowsToGenerate < 1 || rowsToGenerate > 100) {
+    errors.push({ name: "rowsToGenerate", message: "Required and between 1-100" });
+  }
+
+  if (!schemaFile) {
+    errors.push({ name: "schemaFile", message: "Schema file is required" });
+  }
+
+  const fileName = schemaFile?.name.toLowerCase();
+
+  if (!fileName?.endsWith(".ddl")) {
+    errors.push({ name: "schemaFile", message: "File must be a .ddl file" });
+  }
+
+  if (!temperature || temperature < 0 || temperature > 2) {
+    errors.push({ name: "temperature", message: "Required and between 0.0-2.0" });
+  }
+
+  return errors;
+}
+
+const toast = useToast();
+
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+
+  const { instructions, rowsToGenerate, schemaFile, temperature } = event.data;
+
+  const formPayload = new FormData();
+
+  formPayload.append("instructions", instructions);
+  formPayload.append("rowsToGenerate", rowsToGenerate.toString());
+  formPayload.append("temperature", temperature.toString());
+  formPayload.append("ddlSchema", schemaFile!, schemaFile!.name);
+
+  try {
+    const res = await fetch("http://localhost:8080/projects", {
+      method: "POST",
+      body: formPayload,
+    });
+
+    const data = await res.json()
+
+    projectStore.fetchProjects()
+    projectStore.selectedProjectId = data.projectId
+
+    toast.add({ title: "Success", description: "Generation started", color: "success" });
+  } catch {
+    toast.add({ title: "Error", description: "Generation failed", color: "error" });
+  }
+}
+</script>

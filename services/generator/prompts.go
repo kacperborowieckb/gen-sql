@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func BuildGenerationPrompt(ddl string, instructions string) string {
+func BuildGenerationPrompt(ddl string, instructions string, rows int32) string {
 	return fmt.Sprintf(`You are an expert, high-performance PostgreSQL data generation engine.
 
 ## TASK

@@ -6,8 +6,9 @@ const (
 
 // ProjectCreatedEvent defines the payload for a project.created event
 type ProjectCreatedEvent struct {
-	ProjectID              string `json:"projectId"`
-	DdlSchema              string `json:"ddlSchema"`
-	GenerationInstructions string `json:"generationInstructions"`
-	MaxRows                int32  `json:"maxRows"`
+	ProjectID      string  `json:"projectId"`
+	DdlSchema      string  `json:"ddlSchema"`
+	Instructions   string  `json:"instructions"`
+	RowsToGenerate int32   `json:"rowsToGenerate"`
+	Temperature    float32 `json:"temperature"`
 }

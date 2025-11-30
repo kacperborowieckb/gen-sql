@@ -51,13 +51,15 @@ func (s *generatorServer) handleProjectCreated(d amqp.Delivery) error {
 
 	log.Printf("Successfully executed user DDL for project %s", event.ProjectID)
 
-	prompt := BuildGenerationPrompt(event.DdlSchema, event.GenerationInstructions)
+	prompt := BuildGenerationPrompt(event.DdlSchema, event.Instructions, event.RowsToGenerate)
+
+	desiredTemperature := float32(event.Temperature)
 
 	result, err := s.genaiClient.Models.GenerateContent(
 		ctx,
 		"gemini-2.5-flash",
 		genai.Text(prompt),
-		nil,
+		&genai.GenerateContentConfig{Temperature: &desiredTemperature},
 	)
 
 	if err != nil {

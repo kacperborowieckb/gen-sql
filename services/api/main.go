@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
 	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
@@ -69,6 +70,16 @@ func main() {
 	// --- End gRPC Client Setup ---
 
 	r := chi.NewRouter()
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
@@ -82,6 +93,7 @@ func main() {
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", s.handleGetProjectData)
+			r.Delete("/", s.handleDeleteProject)
 		})
 	})
 
