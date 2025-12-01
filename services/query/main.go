@@ -11,18 +11,22 @@ import (
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
 	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
+	"github.com/kacperborowieckb/gen-sql/utils/gemini"
+	"google.golang.org/genai"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 type queryServer struct {
 	pb.UnimplementedQueryServiceServer
-	dbPool *sql.DB
+	dbPool      *sql.DB
+	genaiClient *genai.Client
 }
 
-func NewQueryServer(dbPool *sql.DB) *queryServer {
+func NewQueryServer(dbPool *sql.DB, genaiClient *genai.Client) *queryServer {
 	return &queryServer{
-		dbPool: dbPool,
+		dbPool:      dbPool,
+		genaiClient: genaiClient,
 	}
 }
 
@@ -43,7 +47,13 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	s := NewQueryServer(dbPool)
+	genaiClient, err := gemini.NewConnection()
+
+	if err != nil {
+		log.Fatalf("Failed to setup gemini client: %v", err)
+	}
+
+	s := NewQueryServer(dbPool, genaiClient)
 
 	pb.RegisterQueryServiceServer(grpcServer, s)
 
