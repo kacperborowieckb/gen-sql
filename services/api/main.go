@@ -18,8 +18,9 @@ import (
 )
 
 type apiServer struct {
-	dataClient pb.DataServiceClient
-	mqClient   *messaging.RabbitMQ
+	dataClient  pb.DataServiceClient
+	queryClient pb.QueryServiceClient
+	mqClient    *messaging.RabbitMQ
 }
 
 func main() {
@@ -40,13 +41,24 @@ func main() {
 		log.Println("Using default secure credentials")
 	}
 
-	conn, err := grpc.NewClient(dataServiceAddress, opts...)
+	dataConn, err := grpc.NewClient(dataServiceAddress, opts...)
 	if err != nil {
 		log.Fatalf("Failed to connect to data service: %v", err)
 	}
-	defer conn.Close()
+	defer dataConn.Close()
 
-	dataClient := pb.NewDataServiceClient(conn)
+	dataClient := pb.NewDataServiceClient(dataConn)
+
+	queryServiceAddress := env.GetString("QUERY_SERVICE_ADDR", "localhost:8083")
+	log.Printf("Connecting to query service at %s", queryServiceAddress)
+
+	queryConn, err := grpc.NewClient(queryServiceAddress, opts...)
+	if err != nil {
+		log.Fatalf("Failed to connect to query service: %v", err)
+	}
+	defer queryConn.Close()
+
+	queryClient := pb.NewQueryServiceClient(queryConn)
 
 	// --- RabbitMQ Client Setup ---
 	rabbitMQURI := env.GetString("RABBITMQ_URI", "amqp://guest:guest@rabbitmq:5672/")
@@ -64,8 +76,9 @@ func main() {
 	// --- End RabbitMQ Client Setup ---
 
 	s := &apiServer{
-		dataClient: dataClient,
-		mqClient:   mqClient,
+		dataClient:  dataClient,
+		queryClient: queryClient,
+		mqClient:    mqClient,
 	}
 	// --- End gRPC Client Setup ---
 
@@ -94,6 +107,7 @@ func main() {
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", s.handleGetProjectData)
 			r.Delete("/", s.handleDeleteProject)
+			r.Post("/query", s.handleQuery)
 		})
 	})
 

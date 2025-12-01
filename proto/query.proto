@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package gen;
+
+option go_package = "github.com/kacperborowieckb/gen-sql/shared/gen";
+
+service QueryService {
+  rpc Query(QueryRequest) returns (QueryResponse);
+}
+
+message QueryRequest {
+  string project_id = 1;
+  string query = 2;
+}
+
+message QueryResponse {
+  string generated_query = 1;
+  string json_data = 2;
+}

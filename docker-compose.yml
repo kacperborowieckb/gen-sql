@@ -37,6 +37,7 @@ services:
       PORT: ${API_PORT}
       # Address for the gRPC server (data service)
       DATA_SERVICE_ADDR: "data:8081"
+      QUERY_SERVICE_ADDR: "query:8083"
       # Use "true" for local
       DATA_SERVICE_INSECURE: "true"
     ports:

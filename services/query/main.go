@@ -1,39 +1,70 @@
 package main
 
 import (
+	"database/sql"
 	"log"
-	"net/http"
-	"time"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
+	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
-	"github.com/kacperborowieckb/gen-sql/utils/health"
-	"github.com/kacperborowieckb/gen-sql/utils/shutdown"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
+
+type queryServer struct {
+	pb.UnimplementedQueryServiceServer
+	dbPool *sql.DB
+}
+
+func NewQueryServer(dbPool *sql.DB) *queryServer {
+	return &queryServer{
+		dbPool: dbPool,
+	}
+}
 
 func main() {
 	port := env.GetString("PORT", "8083")
 
-	r := chi.NewRouter()
+	dbPool, err := db.NewConnection(env.GetString("DATABASE_URL", ""))
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer dbPool.Close()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	// --- gRPC Server Setup ---
+	lis, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
 
-	r.Use(middleware.Timeout(60 * time.Second))
+	grpcServer := grpc.NewServer()
 
-	r.Get("/health", health.Handler)
+	s := NewQueryServer(dbPool)
 
-	srv := &http.Server{Addr: ":" + port, Handler: r}
+	pb.RegisterQueryServiceServer(grpcServer, s)
+
+	reflection.Register(grpcServer)
+
+	log.Printf("gRPC query service listening on %s", lis.Addr())
 
 	go func() {
-		log.Printf("query service listening on %s", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %v", err)
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to serve gRPC: %v", err)
 		}
 	}()
 
-	shutdown.WaitForShutdown(srv, 5*time.Second)
+	// --- Graceful Shutdown ---
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
+
+	log.Println("Shutting down gRPC server...")
+
+	grpcServer.GracefulStop()
+
+	log.Println("gRPC server stopped")
 }
