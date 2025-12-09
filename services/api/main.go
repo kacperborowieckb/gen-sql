@@ -107,6 +107,7 @@ func main() {
 	))
 
 	r.Get("/health", health.Handler)
+	r.Get("/export/{cacheId}", s.handleExportQuery)
 	r.Route("/projects", func(r chi.Router) {
 		r.Get("/", s.handleGetProjects)
 		r.Post("/", s.handleStartDataGeneration)

@@ -5,8 +5,9 @@
       <ProjectsList />
       <GenerationTable />
       <div class="flex gap-2">
-        <UInput v-model="query" class="w-full" placeholder="Query data using natural language" />
+        <UInput v-model="query" class="grow" placeholder="Query data using natural language" />
         <UButton @click="sendQuery">Query</UButton>
+        <UButton @click="exportAsCsv" :disabled="!cacheId">Export as CSV</UButton>
       </div>
       <div>{{ rawSql }}</div>
 
@@ -30,12 +31,14 @@ import ProjectsList from "./GenerationView/components/ProjectsList.vue";
 const query = ref("");
 const rawSql = ref("");
 const queryData = ref("");
+const cacheId = ref<string | null>(null)
 
 const projectsStore = useProjectsStore();
 
 async function sendQuery() {
   rawSql.value = "";
   queryData.value = "";
+  cacheId.value = null
 
   const res = await fetch(
     `http://localhost:8080/projects/${projectsStore.selectedProjectId}/query`,
@@ -54,5 +57,11 @@ async function sendQuery() {
 
   rawSql.value = data.generated_query;
   queryData.value = data.json_data;
+  cacheId.value = data.cache_id;
+}
+
+function exportAsCsv() {
+  if (!cacheId.value) return
+  window.location.href = `http://localhost:8080/export/${cacheId.value}`
 }
 </script>
