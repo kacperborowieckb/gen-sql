@@ -119,7 +119,7 @@ func (s *apiServer) handleGetProjects(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		st, _ := status.FromError(err)
-		httpCode := grpcStatusCodeToHTTP(st.Code())
+		httpCode := GrpcStatusCodeToHTTP(st.Code())
 
 		json.WriteJSONError(w, httpCode, st.Message())
 		return
@@ -157,7 +157,7 @@ func (s *apiServer) handleGetProjectData(w http.ResponseWriter, r *http.Request)
 
 	if err != nil {
 		st, _ := status.FromError(err)
-		httpCode := grpcStatusCodeToHTTP(st.Code())
+		httpCode := GrpcStatusCodeToHTTP(st.Code())
 		json.WriteJSONError(w, httpCode, st.Message())
 		return
 	}
@@ -184,7 +184,7 @@ func (s *apiServer) handleDeleteProject(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		st, _ := status.FromError(err)
-		httpCode := grpcStatusCodeToHTTP(st.Code())
+		httpCode := GrpcStatusCodeToHTTP(st.Code())
 
 		json.WriteJSONError(w, httpCode, st.Message())
 		return
@@ -198,7 +198,7 @@ func (s *apiServer) handleDeleteProject(w http.ResponseWriter, r *http.Request) 
 	json.WriteJSON(w, statusCode, grpcResponse)
 }
 
-func grpcStatusCodeToHTTP(code codes.Code) int {
+func GrpcStatusCodeToHTTP(code codes.Code) int {
 	switch code {
 	case codes.InvalidArgument:
 		return http.StatusBadRequest
