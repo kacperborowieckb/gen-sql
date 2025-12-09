@@ -5,19 +5,19 @@ import (
 	"fmt"
 )
 
-func ScanDynamicRows(rows *sql.Rows) ([]map[string]interface{}, error) {
+func ScanDynamicRows(rows *sql.Rows) ([]map[string]any, error) {
 	columns, err := rows.Columns()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get columns: %w", err)
 	}
 
-	var results []map[string]interface{}
+	var results []map[string]any
 
 	for rows.Next() {
-		// Create a slice of interface{} to hold the values for scanning
-		values := make([]interface{}, len(columns))
-		// Create a slice of *interface{} to pass to rows.Scan
-		scanArgs := make([]interface{}, len(values))
+		// Create a slice of any to hold the values for scanning
+		values := make([]any, len(columns))
+		// Create a slice of *any to pass to rows.Scan
+		scanArgs := make([]any, len(values))
 
 		for i := range values {
 			scanArgs[i] = &values[i]
@@ -29,7 +29,7 @@ func ScanDynamicRows(rows *sql.Rows) ([]map[string]interface{}, error) {
 		}
 
 		// Create a map to hold the row data [column_name] -> [value]
-		rowMap := make(map[string]interface{})
+		rowMap := make(map[string]any)
 		for i, col := range columns {
 			val := values[i]
 
