@@ -18,8 +18,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     ports:
       - "${RABBITMQ_AMQP_PORT}:5672"
       - "${RABBITMQ_MGMT_PORT}:15672"
@@ -35,7 +35,6 @@ services:
       dockerfile: services/api/Dockerfile
     environment:
       PORT: ${API_PORT}
-      # Address for the gRPC server (data service)
       DATA_SERVICE_ADDR: "data:8081"
       QUERY_SERVICE_ADDR: "query:8083"
       # Use "true" for local
@@ -69,7 +68,6 @@ services:
     environment:
       PORT: 8082
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
-      GENERATOR_QUEUE: ${GENERATOR_QUEUE_NAME}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       RABBITMQ_URI: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
