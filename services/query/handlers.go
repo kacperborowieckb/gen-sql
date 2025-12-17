@@ -1,12 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
+	"time"
 
+	"github.com/google/uuid"
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
 	"github.com/kacperborowieckb/gen-sql/utils/parsing"
 	"github.com/lib/pq"
@@ -94,8 +99,80 @@ func (s *queryServer) Query(ctx context.Context, in *pb.QueryRequest) (*pb.Query
 		return nil, status.Error(codes.Internal, "failed to encode JSON response")
 	}
 
+	cacheID := uuid.New().String()
+	s.cache.Set(cacheID, string(jsonBytes), 5*time.Minute)
+
 	return &pb.QueryResponse{
 		GeneratedQuery: generatedQuery,
 		JsonData:       string(jsonBytes),
+		CacheId:        cacheID,
+	}, nil
+}
+
+func (s *queryServer) ExportCsv(ctx context.Context, in *pb.ExportCsvRequest) (*pb.ExportCsvResponse, error) {
+	if in.GetCacheId() == "" {
+		return nil, status.Error(codes.InvalidArgument, "cacheId is required")
+	}
+
+	cached, ok := s.cache.Get(in.CacheId)
+	if !ok {
+		return nil, status.Error(codes.NotFound, "cached result not found or expired")
+	}
+
+	var rows []map[string]any
+	if err := json.Unmarshal([]byte(cached), &rows); err != nil {
+		log.Printf("Failed to unmarshal cached data for cacheId %s: %v", in.CacheId, err)
+		return nil, status.Error(codes.Internal, "failed to read cached data")
+	}
+
+	headerSet := make(map[string]struct{})
+	for _, row := range rows {
+		for k := range row {
+			headerSet[k] = struct{}{}
+		}
+	}
+
+	if len(headerSet) == 0 {
+		return nil, status.Error(codes.NotFound, "no data available for export")
+	}
+
+	headers := make([]string, 0, len(headerSet))
+	for k := range headerSet {
+		headers = append(headers, k)
+	}
+	sort.Strings(headers)
+
+	var buf bytes.Buffer
+	writer := csv.NewWriter(&buf)
+
+	if err := writer.Write(headers); err != nil {
+		log.Printf("Failed to write CSV headers for cacheId %s: %v", in.CacheId, err)
+		return nil, status.Error(codes.Internal, "failed to generate csv")
+	}
+
+	for _, row := range rows {
+		record := make([]string, len(headers))
+		for i, col := range headers {
+			if val, ok := row[col]; ok && val != nil {
+				record[i] = fmt.Sprint(val)
+			} else {
+				record[i] = ""
+			}
+		}
+
+		if err := writer.Write(record); err != nil {
+			log.Printf("Failed to write CSV record for cacheId %s: %v", in.CacheId, err)
+			return nil, status.Error(codes.Internal, "failed to generate csv")
+		}
+	}
+
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		log.Printf("Failed to flush CSV writer for cacheId %s: %v", in.CacheId, err)
+		return nil, status.Error(codes.Internal, "failed to generate csv")
+	}
+
+	return &pb.ExportCsvResponse{
+		CsvData: buf.String(),
 	}, nil
 }

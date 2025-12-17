@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -56,4 +57,31 @@ func (s *apiServer) handleQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.WriteJSON(w, http.StatusOK, queryGrpcResponse)
+}
+
+func (s *apiServer) handleExportQuery(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	cacheID := chi.URLParam(r, "cacheId")
+
+	if cacheID == "" {
+		errors.BadRequestResponse(w, r, fmt.Errorf("cacheId is required"))
+		return
+	}
+
+	exportResp, err := s.queryClient.ExportCsv(ctx, &pb.ExportCsvRequest{
+		CacheId: cacheID,
+	})
+	if err != nil {
+		st, _ := status.FromError(err)
+		httpCode := GrpcStatusCodeToHTTP(st.Code())
+		json.WriteJSONError(w, httpCode, st.Message())
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="export-%s.csv"`, cacheID))
+	w.WriteHeader(http.StatusOK)
+	if _, writeErr := w.Write([]byte(exportResp.CsvData)); writeErr != nil {
+		log.Printf("failed to write csv response: %v", writeErr)
+	}
 }

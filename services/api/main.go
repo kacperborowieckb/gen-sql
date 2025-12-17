@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
 	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
@@ -99,7 +100,14 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	r.Use(httprate.Limit(
+		1,
+		3*time.Second,
+		httprate.WithKeyFuncs(httprate.KeyByIP, httprate.KeyByEndpoint),
+	))
+
 	r.Get("/health", health.Handler)
+	r.Get("/export/{cacheId}", s.handleExportQuery)
 	r.Route("/projects", func(r chi.Router) {
 		r.Get("/", s.handleGetProjects)
 		r.Post("/", s.handleStartDataGeneration)

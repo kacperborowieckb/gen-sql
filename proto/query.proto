@@ -6,6 +6,7 @@ option go_package = "github.com/kacperborowieckb/gen-sql/shared/gen";
 
 service QueryService {
   rpc Query(QueryRequest) returns (QueryResponse);
+  rpc ExportCsv(ExportCsvRequest) returns (ExportCsvResponse);
 }
 
 message QueryRequest {
@@ -16,4 +17,13 @@ message QueryRequest {
 message QueryResponse {
   string generated_query = 1;
   string json_data = 2;
+  string cache_id = 3;
+}
+
+message ExportCsvRequest {
+  string cache_id = 1;
+}
+
+message ExportCsvResponse {
+  string csv_data = 1;
 }

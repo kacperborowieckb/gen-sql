@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	pb "github.com/kacperborowieckb/gen-sql/shared/gen/proto"
+	"github.com/kacperborowieckb/gen-sql/shared/storage"
 	"github.com/kacperborowieckb/gen-sql/utils/db"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
 	"github.com/kacperborowieckb/gen-sql/utils/gemini"
@@ -21,12 +22,14 @@ type queryServer struct {
 	pb.UnimplementedQueryServiceServer
 	dbPool      *sql.DB
 	genaiClient *genai.Client
+	cache       *storage.Cache
 }
 
 func NewQueryServer(dbPool *sql.DB, genaiClient *genai.Client) *queryServer {
 	return &queryServer{
 		dbPool:      dbPool,
 		genaiClient: genaiClient,
+		cache:       storage.NewCache(),
 	}
 }
 
