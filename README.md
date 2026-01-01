@@ -28,6 +28,12 @@ make proto-gen
 
 Manual :c  ./temp/schema.sql
 
+## DOCKER IMAGE
+
+```bash
+docker pull ghcr.io/kacperborowieckb/gen-sql/api:latest
+```
+
 ## MONITORING
 
 ### Metrics Endpoint

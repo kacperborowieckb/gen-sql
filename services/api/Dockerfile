@@ -2,7 +2,7 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /src
 
-COPY go.mod ./
+COPY go.mod go.sum ./
 COPY shared ./shared
 COPY utils ./utils
 COPY services/api ./services/api
@@ -21,4 +21,3 @@ USER 65532:65532
 COPY --from=builder /out/app /app
 
 CMD ["/app"]
-
