@@ -13,7 +13,9 @@ import (
 	"github.com/kacperborowieckb/gen-sql/shared/messaging"
 	"github.com/kacperborowieckb/gen-sql/utils/env"
 	"github.com/kacperborowieckb/gen-sql/utils/health"
+	"github.com/kacperborowieckb/gen-sql/utils/metrics"
 	"github.com/kacperborowieckb/gen-sql/utils/shutdown"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -100,6 +102,8 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	r.Use(metrics.Middleware)
+
 	r.Use(httprate.Limit(
 		1,
 		3*time.Second,
@@ -107,6 +111,7 @@ func main() {
 	))
 
 	r.Get("/health", health.Handler)
+	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 	r.Get("/export/{cacheId}", s.handleExportQuery)
 	r.Route("/projects", func(r chi.Router) {
 		r.Get("/", s.handleGetProjects)

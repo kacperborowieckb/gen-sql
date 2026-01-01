@@ -27,3 +27,15 @@ make proto-gen
 ## MIGRATIONS
 
 Manual :c  ./temp/schema.sql
+
+## MONITORING
+
+### Metrics Endpoint
+
+The API service exposes metrics at: `http://localhost:8080/metrics`
+
+### Available Metrics
+
+- `http_requests_total` - Total number of HTTP requests (with labels: method, route, status_code)
+- `http_request_duration_seconds` - HTTP request duration histogram
+- `http_requests_in_flight` - Number of requests currently being processed
